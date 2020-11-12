@@ -284,6 +284,7 @@ __DS_IMPL_END
 __DS_BEGIN
 
 using ds_impl::graph_impl;
+using ds_impl::size_t;
 
 /*
  *	The implement of graph can be based on adjacent matrix or adjacent list.
