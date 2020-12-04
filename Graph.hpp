@@ -1,12 +1,14 @@
 #ifndef GRAPH_HPP
 #define GRAPH_HPP
 
+#include<vector>
 #include<optional>
 #include<bitset>
 #include<tuple>
 #include<map>
 #include<array>
 #include<list>
+#include<exception>
 
 #define __DS ds
 #define __DS_BEGIN namespace __DS {
@@ -20,9 +22,9 @@ __DS_IMPL_BEGIN
 // Here set the maximum of the graph's size and weight type.
 // Default maximum size is 2^16 - 1 = 65535.
 // Default weight type is 8bit signed integer.
-using size_t = uint16_t;
-using index_t = uint16_t;
-using weight_t = int16_t;
+using size_t = uint16_t;	// 2 Bytes
+using index_t = uint16_t;	// 2 Bytes
+using weight_t = int16_t;	// 2 Bytes
 
 /*	When the weight is above the value of disconnected, the Edge is assumed as a connected edge 
 	Therefore even if the weight of edge is 0, it will be concerned as a loop pointing to itself
@@ -37,13 +39,21 @@ constexpr weight_t disconnected = -1;
 #define WEIGHTED_GRAPH_BEGIN if constexpr (_Weighted) {
 #define NON_WEIGHTED_GRAPH_BEGIN if constexpr (!_Weighted) {
 #define WEIGHTED_GRAPH_END }
+#define NON_WEIGHTED_GRAPH_END }
 #define ORIENTED_GRAPH if constexpr (_Oriented)
 #define NON_ORIENTED_GRAPH if constexpr (!_Oriented)
 #define ORIENTED_GRAPH_BEGIN if constexpr (_Oriented) {
 #define NON_ORIENTED_GRAPH_BEGIN if constexpr (!_Oriented) {
 #define ORIENTED_GRAPH_END }
+#define NON_ORIENTED_GRAPH_END }
 #define ELSE else
 
+struct matrix_tag { };
+struct list_tag { };
+template<typename _Container, bool needChecked>
+class _Unchecked_Iterator;
+
+/* Edge */
 template<bool _Weighted>
 struct edge { };
 
@@ -54,7 +64,13 @@ struct edge<true>
 	index_t destination;
 	weight_t weight;
 
-	edge(index_t s, index_t d, weight_t w) :source(s), destination(d), weight(w) { }
+	edge(index_t s, index_t d, weight_t w = default_weight) :source(s), destination(d), weight(w) { }
+	edge(const edge& rhs)
+	{
+		source = rhs.source;
+		destination = rhs.destination;
+		weight = rhs.weight;
+	}
 };
 
 template<>
@@ -64,15 +80,26 @@ struct edge<false>
 	index_t destination;
 
 	edge(index_t s, index_t d) : source(s), destination(d) { }
+	edge(const edge& rhs)
+	{
+		source = rhs.source;
+		destination = rhs.destination;
+	}
 };
 
-// Size is extendable 
+/* Foundational Container */
 template<typename _Ty,
 		 bool _Weighted = false,
 		 bool _Oriented = false
 >
 class list
 {
+public:
+	using value_type = _Ty;
+	using container_type = list_tag;
+	using self = list<_Ty, _Weighted, _Oriented>;
+	using _Edge = edge<_Weighted>;
+protected:
 	template<bool _Weighted>
 	struct linkNode { };
 
@@ -102,7 +129,8 @@ class list
 	using _Link = _Link_type*;
 	using _Node = std::pair<_Ty, _Link>;
 
-	using _Edge = edge<_Weighted>;
+	using iterator = _Unchecked_Iterator<self, false>;
+	friend class iterator;
 
 	std::map<index_t, _Node> adjacent_list;
 
@@ -114,7 +142,11 @@ public:
 
 	~list()
 	{
-
+		std::vector<index_t> v;
+		for (auto& iter : adjacent_list)
+			v.push_back(iter.first);
+		for (auto& i : v)
+			eraseVertices(i);
 	}
 
 	std::optional<_Ty> at(index_t id) const
@@ -136,13 +168,18 @@ public:
 	}
 
 	template<typename... Args>
-	bool registerVertice(index_t index, Args&&... args)
+	bool registerVertices(index_t index, Args&&... args)
 	{
 		auto [elem, success] = adjacent_list.try_emplace(index, std::make_pair(std::forward<Args>(args)..., nullptr));
 		return success;
 	}
 
-	bool eraseVertice(index_t index)
+	bool hasVertices(index_t s)
+	{
+		return adjacent_list.count(s);
+	}
+
+	bool eraseVertices(index_t index)
 	{
 		//cascade delete
 		if (!adjacent_list.count(index))
@@ -170,7 +207,7 @@ public:
 		return success;
 	}
 
-	size_t verticeSize() const
+	size_t verticesSize() const
 	{
 		return adjacent_list.size();
 	}
@@ -218,6 +255,32 @@ public:
 			return true;
 		else
 			return false;
+	}
+
+	bool hasEdge(const _Edge& edge) const noexcept
+	{
+		WEIGHTED_GRAPH_BEGIN
+			const auto& [s, d, weight] = edge;
+		return hasEdge(s, d);
+		WEIGHTED_GRAPH_END
+			NON_WEIGHTED_GRAPH_BEGIN
+			const auto& [s, d] = edge;
+		return hasEdge(s, d);
+		NON_WEIGHTED_GRAPH_END
+	}
+
+	bool existsEdge(const _Edge& edge) noexcept
+	{
+		// Do check first
+		if (_Link tg = fetchEdge(edge.source, edge.destination); tg)
+		{
+			WEIGHTED_GRAPH
+				return tg->weight == edge.weight;
+			ELSE
+				return true;
+		}
+
+		return false;
 	}
 
 	bool insertEdge(index_t s, index_t d, weight_t weight = default_weight, bool firstInsert = true)
@@ -386,7 +449,7 @@ public:
 		}
 		std::cout << std::endl;
 	}
-private:
+protected:
 	_Link fetchEdge(index_t s, index_t d)
 	{
 		if (!adjacent_list.count(s))
@@ -405,8 +468,6 @@ private:
 	}
 };
 
-// Weighted graph use std::array as its two dimension matrix.
-// Non-weighted graph use std::bitset as its two dimension matrix.
 template<typename _Ty,
 		 bool _Weighted = false,
 		 bool _Oriented = false,
@@ -414,15 +475,21 @@ template<typename _Ty,
 >
 class matrix
 {
+public:
+	using value_type = _Ty;
+	using container_type = matrix_tag;
+	using self = matrix<_Ty, _Weighted, _Oriented, _Size>;
+	using _Edge = edge<_Weighted>;
+protected:
 	using matrix_nonweighted_type = std::bitset<_Size>;
 	using matrix_weighted_type = std::array<std::array<weight_t, _Size>, _Size>;
 	using matrix_type = std::tuple_element_t<_Weighted,
 											std::tuple<matrix_nonweighted_type, matrix_weighted_type>>;
-	
-	using _Edge = edge<_Weighted>;
+
+	using iterator = _Unchecked_Iterator<self, false>;
+	friend class iterator;
 
 	matrix_type adjacent_matrix;
-	//std::array<_Ty, _Size> vertices;
 	std::map<index_t, _Ty> vertices;
 public:
 	matrix():vertices(), adjacent_matrix()
@@ -434,6 +501,10 @@ public:
 		ELSE
 			for (size_t i = 0; i < _Size; ++i)
 				adjacent_matrix[i].reset();
+	}
+
+	~matrix()
+	{
 	}
 
 	std::optional<_Ty> at(index_t s) const
@@ -455,7 +526,7 @@ public:
 	}
 
 	template<typename... _Arg>
-	bool registerVertice(index_t s, _Arg&&... args)
+	bool registerVertices(index_t s, _Arg&&... args)
 	{
 		if (s >= _Size)
 			return false;
@@ -464,7 +535,12 @@ public:
 		return success;
 	}
 
-	bool eraseVertice(index_t s)
+	bool hasVertices(index_t s)
+	{
+		return vertices.count(s);
+	}
+
+	bool eraseVertices(index_t s)
 	{
 		if (!indexCheck(s))
 			return false;
@@ -488,7 +564,7 @@ public:
 		return true;
 	}
 
-	size_t verticeSize() const noexcept
+	size_t verticesSize() const noexcept
 	{ 
 		return vertices.size();
 	}
@@ -563,16 +639,43 @@ public:
 		}
 	}
 
-	// Edge from v[i] to v[j]
 	bool hasEdge(index_t s, index_t d) const noexcept
 	{
 		if (!indexCheck(s, d))
 			return false;
 
 		WEIGHTED_GRAPH
-			return WEIGHT_CHECK(adjacent_matrix[s][d]) ? true : false;
+			return WEIGHT_CHECK(adjacent_matrix[s][d]);
 		ELSE
 			return adjacent_matrix[s][d];
+	}
+
+	bool hasEdge(const _Edge& edge) const noexcept
+	{
+		WEIGHTED_GRAPH_BEGIN
+			const auto& [s, d, weight] = edge;
+			return hasEdge(s, d);
+		WEIGHTED_GRAPH_END
+		NON_WEIGHTED_GRAPH_BEGIN
+			const auto& [s, d] = edge;
+			return hasEdge(s, d);
+		NON_WEIGHTED_GRAPH_END
+	}
+
+	bool existsEdge(const _Edge& edge) const noexcept
+	{
+		// Do check first
+		if (!indexCheck(edge.source, edge.destination))
+			return false;
+
+		WEIGHTED_GRAPH_BEGIN
+			const auto& [s, d, weight] = edge;
+			return adjacent_matrix[s][d] == weight;
+		WEIGHTED_GRAPH_END
+		NON_WEIGHTED_GRAPH_BEGIN
+			const auto& [s, d] = edge;
+			return adjacent_matrix[s][d];
+		NON_WEIGHTED_GRAPH_END
 	}
 
 	bool insertEdge(index_t s, index_t d, weight_t weight = default_weight) noexcept
@@ -696,7 +799,7 @@ public:
 		}
 		std::cout << std::endl;
 	}
-private:
+protected:
 	bool indexCheck(index_t f, index_t s) const noexcept
 	{
 		return vertices.count(f) && vertices.count(s) && f < _Size && s < _Size;
@@ -708,34 +811,123 @@ private:
 	}
 };
 
-template<typename _Ty,
-	 	 bool _Weighted = false,
-		 bool _Oriented = false,
-		 bool _Matrix = false,
-		 size_t _Size = 0
->
-class graph_impl { };
+/* Iterator Exception */
+class iterator_exception :public std::exception
+{
+	std::string info;
+public:
+	iterator_exception(const std::string& str) : info(str) { }
 
-template<typename _Ty,
-		 bool _Weighted,
-		 bool _Oriented,
-		 size_t _Size
->
-class graph_impl<_Ty, _Weighted, _Oriented, true, _Size> :
-	public matrix<_Ty, _Weighted, _Oriented, _Size>
+	std::string what()
+	{
+		return info;
+	}
+};
+
+class invaild_iterator : public iterator_exception
 {
 public:
+	invaild_iterator(const std::string& str) : iterator_exception(str) { }
+};
 
+class invaild_operation : public iterator_exception
+{
+public:
+	invaild_operation(const std::string& str) : iterator_exception(str) { }
+};
+
+/* Iterator */
+template<typename _Container, bool needChecked>
+class _Unchecked_Iterator
+{
+public:
+	using _Edge = typename _Container::_Edge;
+private:
+	using _Container_Tag = typename _Container::container_type;
+
+	friend class _Unchecked_Iterator<_Container, true>;
+	friend class _Unchecked_Iterator<_Container, false>;
+
+	index_t pos;
+	_Container* source;
+public:
+	explicit _Unchecked_Iterator(index_t p, _Container& s) :pos(p), source(s.hasVertices(p) ? &s : nullptr) { }
+
+	explicit _Unchecked_Iterator(index_t p, _Container* s) :_Unchecked_Iterator(p,*s) { }
+
+	template<bool checked>
+	_Unchecked_Iterator(const _Unchecked_Iterator<_Container, checked>& rhs)
+	{
+		pos = rhs.pos;
+		source = rhs.source;
+	}
+
+	~_Unchecked_Iterator() = default;
+
+	decltype(auto) operator*()
+	{
+		if constexpr (std::is_same_v<_Container_Tag, matrix_tag>)
+			return source->vertices[pos];
+		else
+			return source->adjacent_list[pos];
+	}
+
+	decltype(auto) operator+(const _Edge& edge)
+	{
+		advance(edge);
+		return *this;
+	}
+
+	decltype(auto) operator-(const _Edge& edge)
+	{
+		back(edge);
+		return *this;
+	}
+
+	bool advance(const _Edge& edge)
+	{
+		if (pos != edge.source)
+			return false;
+
+		if constexpr (needChecked)
+			if (!source->hasEdge(edge.source, edge.destination))
+				if constexpr (std::is_same_v < _Edge, edge<true>)
+					throw invaild_operation("[Advance]-Invaild Operation-[" + std::to_string(pos) + "][start:" + edge.source + ",destination:" + edge.destination + ",weight:" + edge.weight + "]");
+				else
+					throw invaild_operation("[Advance]-Invaild Operation-[" + std::to_string(pos) + "][start:" + edge.source + ",destination:" + edge.destination + "]");
+
+		pos = edge.destination;
+		return true;
+	}
+
+	bool back(const _Edge& edge)
+	{
+		if (pos != edge.destination)
+			return false;
+
+		if constexpr (needChecked)
+			if (!source->hasEdge(edge.source, edge.destination))
+				if constexpr (std::is_same_v < _Edge, edge<true>)
+					throw invaild_operation("[Back]-Invaild Operation-[" + std::to_string(pos) + "][start:" + edge.source + ",destination:" + edge.destination + ",weight:" + edge.weight + "]");
+				else
+					throw invaild_operation("[Back]-Invaild Operation-[" + std::to_string(pos) + "][start:" + edge.source + ",destination:" + edge.destination + "]");
+
+		pos = edge.source;
+		return true;
+	}
 };
 
 template<typename _Ty,
-		 bool _Weighted,
-		 bool _Oriented,
-		 size_t _Size
+	bool _Weighted = false,
+	bool _Oriented = false,
+	bool _Matrix = true,
+	size_t _Size = 0
 >
-class graph_impl<_Ty, _Weighted, _Oriented, false, _Size> :
-	public list<_Ty, _Weighted, _Oriented>
+class graph_althgorim:	
+	public std::tuple_element_t<_Matrix,std::tuple<list<_Ty,_Weighted,_Oriented>,
+												   matrix<_Ty,_Weighted,_Oriented,_Size>>>
 {
+public:
 
 };
 
@@ -743,22 +935,20 @@ __DS_IMPL_END
 
 __DS_BEGIN
 
-using ds_impl::graph_impl;
+using ds_impl::graph_althgorim;
 using ds_impl::size_t;
 using ds_impl::index_t;
 using ds_impl::weight_t;
 using ds_impl::edge;
 
-/*
- *	The implement of graph can be based on adjacent matrix or adjacent list.
-*/
+/* Interface */
 template<typename _Ty,
 		 bool _Weighted = false,
 		 bool _Oriented = false,
 		 bool _Matrix = true,
 		 size_t _Size = 0
 >
-class graph :public graph_impl<_Ty, _Weighted, _Oriented, _Matrix, _Size>
+class graph :public graph_althgorim<_Ty, _Weighted, _Oriented, _Matrix, _Size>
 {
 	static_assert(!_Matrix ||(_Matrix && _Size != 0) , "You must appoint a size to the matrix.");
 public:
