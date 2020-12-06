@@ -402,6 +402,14 @@ public:
 		return true;
 	}
 
+	bool getEdge(index_t s, std::vector<_Edge>& res, bool append = false) noexcept
+	{
+		if(!append)
+			res.clear();
+
+		return getEdgeIn(s,res,true) && getEdgeOut(s,res,true);
+	}
+
 	bool getEdgeIn(index_t d, std::vector<_Edge>& res, bool append = false) noexcept
 	{
 		if (!adjacent_list.count(d))
@@ -475,6 +483,17 @@ public:
 		}
 		std::cout << std::endl;
 	}
+
+	decltype(auto) begin() const noexcept
+	{
+		return adjacent_list.begin();
+	}
+
+	decltype(auto) end() const noexcept
+	{
+		return adjacent_list.end();
+	}
+
 protected:
 	_Link fetchEdge(index_t s, index_t d) noexcept
 	{
@@ -512,7 +531,7 @@ protected:
 	using matrix_type = std::tuple_element_t<_Weighted,
 											std::tuple<matrix_nonweighted_type, matrix_weighted_type>>;
 
-	using iterator = _Unchecked_Iterator<self, false>;
+	using iterator = _Unchecked_Iterator<self, true>;
 	friend class iterator;
 
 	matrix_type adjacent_matrix;
@@ -761,6 +780,14 @@ public:
 		}
 	}
 
+	bool getEdge(index_t s, std::vector<_Edge>& res, bool append = false) noexcept
+	{
+		if(!append)
+			res.clear();
+			
+		return getEdgeIn(s,res,true) && getEdgeOut(s,res,true);
+	}
+
 	bool getEdgeIn(index_t d, std::vector<_Edge>& res, bool append = false) const noexcept
 	{
 		if (!indexCheck(d))
@@ -837,6 +864,17 @@ public:
 		}
 		std::cout << std::endl;
 	}
+
+	decltype(auto) begin() const noexcept
+	{
+		return vertices.begin();
+	}
+
+	decltype(auto) end() const noexcept
+	{
+		return vertices.end();
+	}
+
 protected:
 	bool indexCheck(index_t f, index_t s) const noexcept
 	{
@@ -847,6 +885,7 @@ protected:
 	{
 		return vertices.count(f) && f < _Size;
 	}
+
 };
 
 /* Iterator Exception */
@@ -1077,7 +1116,7 @@ template<typename _Ty,
 		 size_t _Size,
 		 typename... _Containers
 >
-decltype(auto) make_subgraph(const graph<_Ty,_Weighted,_Oriented,_Matrix,_Size>& graph, _Containers&&... containers)
+decltype(auto) make_plaingraph(const graph<_Ty,_Weighted,_Oriented,_Matrix,_Size>& graph, _Containers&&... containers)
 {
 	return plainGraph<_Weighted,_Oriented,_Matrix,_Size>(std::forward<_Containers>(containers)...);
 }
@@ -1087,7 +1126,28 @@ template<typename _Graph,
 >
 decltype(auto) make_subgraph(_Graph&& source, _Vertices&&... index)
 {
-	_Graph result;
+	std::remove_reference_t<_Graph> result;
+
+	index_t arr[] = {
+		(static_cast<index_t>(index))...
+	};
+	std::vector<decltype(source.edge_type())> tmp;
+	for(auto iter : arr)
+	{
+		source.getEdge(iter,tmp);
+		for(auto& edge : tmp)
+			[&source,&result,&edge]{
+				if(!result.hasVertices(edge.source))
+					result.registerVertices(edge.source, source.at(edge.source).value());
+				
+				if(!result.hasVertices(edge.destination))
+					result.registerVertices(edge.destination, source.at(edge.destination).value());
+
+				result.insertEdge(edge);
+				}();
+	}
+
+	return result;
 }
 
 __DS_END
