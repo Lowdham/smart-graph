@@ -14,6 +14,16 @@ Graph<Ty,Weighted,Directed,Matrix,Size>::Graph(Container&&... containers)
     Initializer(std::forward<Container>(containers)...);
 }
 
+template<typename Ty,
+		  bool Weighted,
+		  bool Directed,
+		  bool Matrix,
+		  size_t Size>
+Graph<Ty,Weighted,Directed,Matrix,Size>::Graph(const Graph& rhs):Base(rhs)
+{
+	
+}
+
 template <typename Ty,
 		  bool Weighted,
 		  bool Directed,

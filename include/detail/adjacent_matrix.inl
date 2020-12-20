@@ -41,6 +41,16 @@ template <typename Ty,
 		  bool Weighted,
 		  bool Directed,
 		  size_t Size>
+AdjacentMatrix<Ty,Weighted,Directed,Size>::AdjacentMatrix(AdjacentMatrix&& rhs):
+    matrix_(std::move(rhs.matrix_)),vertices_(std::move(rhs.vertices_))
+{
+
+}
+
+template <typename Ty,
+		  bool Weighted,
+		  bool Directed,
+		  size_t Size>
 std::optional<Ty> AdjacentMatrix<Ty,Weighted,Directed,Size>::At(index_t s) const
 	{
 		if (!IndexCheck(s))

@@ -42,6 +42,15 @@ AdjacentList<Ty,Weighted,Directed>::AdjacentList(const AdjacentList& rhs)
 template <typename Ty,
 		  bool Weighted,
 		  bool Directed>
+AdjacentList<Ty,Weighted,Directed>::AdjacentList(AdjacentList&& rhs):
+    list_(std::move(rhs.list_))
+{
+    
+}
+
+template <typename Ty,
+		  bool Weighted,
+		  bool Directed>
 std::optional<Ty> AdjacentList<Ty,Weighted,Directed>::At(index_t id) const
 {
     if (!list_.count(id))
