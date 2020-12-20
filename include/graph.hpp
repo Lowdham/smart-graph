@@ -1,7 +1,7 @@
 #ifndef GRAPH_HPP
 #define GRAPH_HPP
 
-#include "althgorim.hpp"
+#include "algorithm.hpp"
 
 namespace smart_graph {
 
@@ -16,19 +16,23 @@ template <typename Ty,
 		  bool Directed = false,
 		  bool Matrix = true,
 		  size_t Size = 0>
-class Graph: public smart_graph_impl::GraphAlthgorim<Ty, Weighted, Directed, Matrix, Size>
+class Graph: public smart_graph_impl::GraphAlgorithm<Ty, Weighted, Directed, Matrix, Size>
 {
-	using Base = smart_graph_impl::GraphAlthgorim<Ty, Weighted, Directed, Matrix, Size>;
+	using Base = smart_graph_impl::GraphAlgorithm<Ty, Weighted, Directed, Matrix, Size>;
 
 	static_assert(!Matrix || (Matrix && Size != 0), "You must appoint a size to the matrix.");
 
 public:
 	using edge_t = Edge<Weighted>;
 
-	Graph() : Base() {}
+	Graph():Base() {}
 
 	template <typename... Container>
 	Graph(Container&&... containers);
+
+	Graph(const Graph& rhs);
+
+	Graph(Graph&& rhs):Base(std::forward<Graph>(rhs)) { }
 
 	std::string DebugInfo();
 

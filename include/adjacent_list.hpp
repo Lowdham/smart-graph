@@ -70,6 +70,8 @@ public:
 
 	AdjacentList(const AdjacentList& rhs);
 
+	AdjacentList(AdjacentList&& rhs);
+
 	std::optional<Ty> At(index_t id) const;
 
 	template <typename Arg>

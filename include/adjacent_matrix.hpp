@@ -47,6 +47,8 @@ public:
 
 	AdjacentMatrix(const AdjacentMatrix& rhs);
 
+	AdjacentMatrix(AdjacentMatrix&& rhs);
+
 	std::optional<Ty> At(index_t s) const;
 
 	template <typename Arg>
