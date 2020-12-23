@@ -30,6 +30,8 @@ public:
 	GraphAlgorithm(const GraphAlgorithm& rhs):Base(rhs) { }
 
 	GraphAlgorithm(GraphAlgorithm&& rhs):Base(std::forward<GraphAlgorithm>(rhs)) { }
+
+	
 };
 
 }  // namespace smart_graph_impl

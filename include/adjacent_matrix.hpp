@@ -9,6 +9,7 @@
 #include <bitset>
 #include <array>
 #include <tuple>
+#include <queue>
 
 #include "edge.hpp"
 
@@ -87,11 +88,20 @@ public:
 
 	bool GetEdgeIn(index_t dest, std::vector<EdgeType> &res, bool append = false) const noexcept;
 
+	template<typename Queue>
+	bool GetEdgeInOrdered(index_t destination, Queue&& queue, bool append = false) const noexcept;
+
 	bool GetEdgeOut(index_t start, std::vector<EdgeType> &res, bool append = false) const noexcept;
+
+	template<typename Queue>
+	bool GetEdgeOutOrdered(index_t start, Queue&& queue, bool append = false) const noexcept;
 
 	weight_t WeightOfEdge(index_t start, index_t dest) const noexcept;
 
 	void Print() const noexcept;
+
+	template<bool Ascending>
+	decltype(auto) makeEdgeQueue() const noexcept;
 
 	decltype(auto) begin() const noexcept
 	{

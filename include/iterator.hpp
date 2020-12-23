@@ -67,9 +67,9 @@ public:
 
 	decltype(auto) operator*();
 
-	decltype(auto) operator+(const EdgeType& edge);
+	decltype(auto) operator+=(const EdgeType& edge);
 
-	decltype(auto) operator-(const EdgeType& edge);
+	decltype(auto) operator-=(const EdgeType& edge);
 
 	bool advance(const EdgeType& edge);
 

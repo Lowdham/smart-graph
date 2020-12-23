@@ -50,6 +50,16 @@ struct Edge<false>
 	}
 };
 
+bool operator<(const Edge<true>& lhs, const Edge<true>& rhs)
+{
+	return lhs.weight_ < rhs.weight_;
+}
+
+bool operator>(const Edge<true>& lhs, const Edge<true>& rhs)
+{
+	return lhs.weight_ > rhs.weight_;
+}
+
 }  //namespace smart_graph_impl
 }  //namespace smart_graph
 #endif //EGDE_HPP_
