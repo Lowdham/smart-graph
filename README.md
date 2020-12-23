@@ -7,10 +7,10 @@ using smart_graph::graph;
 ### interface
 ```c++
 template<typename _Ty,
-		 bool _Weighted = false,
-		 bool _Oriented = false,
-		 bool _Matrix = true,
-		 size_t _Size = 0
+	 bool _Weighted = false,
+	 bool _Oriented = false,
+	 bool _Matrix = true,
+	 size_t _Size = 0
 >
 class graph :public graph_althgorim<_Ty, _Weighted, _Oriented, _Matrix, _Size>
 {
