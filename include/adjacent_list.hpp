@@ -16,6 +16,34 @@ namespace smart_graph_impl {
 
 struct AdjacentListTag { };
 
+template <bool Weighted>
+struct LinkNode
+{
+
+};
+
+template <>
+struct LinkNode<true>
+{
+	index_t destination_;
+
+	weight_t weight_;
+
+	LinkNode *next_;
+
+	LinkNode(index_t i, weight_t w, LinkNode *n = nullptr) : destination_(i), weight_(w), next_(n) {}
+};
+
+template <>
+struct LinkNode<false>
+{
+	index_t destination_;
+
+	LinkNode *next_;
+
+	LinkNode(index_t i, LinkNode *n = nullptr) : destination_(i), next_(n) {}
+};
+
 template <typename Ty,
 		  bool Weighted = false,
 		  bool Directed = false>
@@ -28,33 +56,6 @@ public:
 	using EdgeType = Edge<Weighted>;
 
 protected:
-	template <bool Weighted>
-	struct LinkNode
-	{
-	};
-
-	template <>
-	struct LinkNode<true>
-	{
-		index_t destination_;
-
-		weight_t weight_;
-
-		LinkNode *next_;
-
-		LinkNode(index_t i, weight_t w, LinkNode *n = nullptr) : destination_(i), weight_(w), next_(n) {}
-	};
-
-	template <>
-	struct LinkNode<false>
-	{
-		index_t destination_;
-
-		LinkNode *next_;
-
-		LinkNode(index_t i, LinkNode *n = nullptr) : destination_(i), next_(n) {}
-	};
-	//
 	using LinkType = LinkNode<Weighted>;
 	using Link = LinkType *;
 	using Node = std::pair<Ty, Link>;

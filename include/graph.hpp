@@ -12,10 +12,10 @@ using smart_graph_impl::weight_t;
 
 /* Interface */
 template <typename Ty,
-		  bool Weighted = false,
-		  bool Directed = false,
-		  bool Matrix = true,
-		  size_t Size = 0>
+          bool Weighted = false,
+          bool Directed = false,
+          bool Matrix = true,
+          size_t Size = 0>
 class Graph: public smart_graph_impl::GraphAlgorithm<Ty, Weighted, Directed, Matrix, Size>
 {
 	using Base = smart_graph_impl::GraphAlgorithm<Ty, Weighted, Directed, Matrix, Size>;
@@ -44,18 +44,18 @@ private:
 };
 
 template <bool Weighted = false,
-		  bool Directed = false,
-		  bool Matrix = true,
-		  size_t Size = 0
+          bool Directed = false,
+          bool Matrix = true,
+          size_t Size = 0
 >
 using PlainGraph = Graph<index_t, Weighted, Directed, Matrix, Size>;
 
 template <typename Ty,
-		  bool Weighted,
-		  bool Directed,
-		  bool Matrix,
-		  size_t Size,
-		  typename... Containers>
+          bool Weighted,
+          bool Directed,
+          bool Matrix,
+          size_t Size,
+          typename... Containers>
 decltype(auto) MakePlaingraph(const Graph<Ty, Weighted, Directed, Matrix, Size>& graph, Containers&&... containers);
 
 template <typename Graph,
@@ -63,11 +63,11 @@ template <typename Graph,
 decltype(auto) MakeSubgraph(Graph&& source, Vertices&&... index);
 
 template <typename Ty,
-		  bool Weighted,
-		  bool Directed,
-		  bool Matrix,
-		  size_t Size,
-		  typename... Vertices>
+          bool Weighted,
+          bool Directed,
+          bool Matrix,
+          size_t Size,
+          typename... Vertices>
 decltype(auto) MakePlainSubgraph(Graph<Ty, Weighted, Directed, Matrix, Size>& graph, Vertices &&... index);
 
 }  // namespace smart_graph
