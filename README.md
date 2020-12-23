@@ -2,7 +2,7 @@
 ## usage
 ```c++
 #include "Graph.hpp"
-using __DS::graph;
+using smart_graph::graph;
 ```
 ### interface
 ```c++
