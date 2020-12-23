@@ -1,4 +1,4 @@
-#include "../include/graph.hpp"
+#include "include/graph.hpp"
 using namespace smart_graph;
 
 int main()
