@@ -30,14 +30,14 @@ decltype(auto) UncheckedIterator<Container,NeedChecked>::operator*()
 }
 
 template <typename Container, bool NeedChecked>
-decltype(auto) UncheckedIterator<Container,NeedChecked>::operator+(const EdgeType& edge)
+decltype(auto) UncheckedIterator<Container,NeedChecked>::operator+=(const EdgeType& edge)
 {
     advance(edge);
     return *this;
 }
 
 template <typename Container, bool NeedChecked>
-decltype(auto) UncheckedIterator<Container,NeedChecked>::operator-(const EdgeType& edge)
+decltype(auto) UncheckedIterator<Container,NeedChecked>::operator-=(const EdgeType& edge)
 {
     back(edge);
     return *this;

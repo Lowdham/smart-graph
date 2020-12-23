@@ -411,8 +411,8 @@ bool AdjacentList<Ty,Weighted,Directed>::GetEdgeOut(index_t start, std::vector<E
     if (!append)
         res.clear();
 
-    std::map<index_t, Node>::const_iterator iter = list_.find(start);
-    auto  current = iter->second.second;
+    typename std::map<index_t, Node>::const_iterator iter = list_.find(start);
+    auto current = iter->second.second;
     while (current)
     {
         WEIGHTED_GRAPH
@@ -440,7 +440,7 @@ bool AdjacentList<Ty,Weighted,Directed>::GetEdgeOutOrdered(index_t start, Queue&
     if (!append)
         queue = { };
 
-    std::map<index_t, Node>::const_iterator iter = list_.find(start);
+    typename std::map<index_t, Node>::const_iterator iter = list_.find(start);
     auto current = iter->second.second;
     while (current)
     {
@@ -527,7 +527,7 @@ auto AdjacentList<Ty,Weighted,Directed>::FetchEdge(index_t start, index_t dest) 
     if (!list_.count(start))
         return nullptr;
 
-    std::map<index_t, Node>::const_iterator iter = list_.find(source);
+    typename std::map<index_t, Node>::const_iterator iter = list_.find(start);
     Link current = iter->second.second;
     while (current)
     {

@@ -85,7 +85,7 @@ void Graph<Ty,Weighted,Directed,Matrix,Size>::Initializer(HeadContainer&& contai
     }
 
     if constexpr (sizeof...(rest) > 0)
-        this->Initializer(std::forward<_Rest>(rest)...);
+        this->Initializer(std::forward<Rest>(rest)...);
 }
 
 template <typename Ty,
