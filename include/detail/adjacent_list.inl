@@ -375,22 +375,79 @@ bool AdjacentList<Ty,Weighted,Directed>::GetEdgeIn(index_t destination, std::vec
 template <typename Ty,
 		  bool Weighted,
 		  bool Directed>
-bool AdjacentList<Ty,Weighted,Directed>::GetEdgeOut(index_t source, std::vector<EdgeType> &res, bool append) const noexcept
+template <typename Queue>
+bool AdjacentList<Ty,Weighted,Directed>::GetEdgeInOrdered(index_t destination, Queue&& queue, bool append) const noexcept
 {
-    if (!list_.count(source))
+    static_assert(Weighted,"The edges are non-weighted.");
+
+    if (!list_.count(destination))
+        return false;
+
+    if (!append)
+        queue = { };
+
+    for (auto &iter : list_)
+    {
+        Link current = FetchEdge(iter.first, destination);
+        if (current)
+        {
+            WEIGHTED_GRAPH
+                queue.emplace(iter.first, destination, current->weight_);
+            ELSE
+                queue.emplace(iter.first, destination);
+        }
+    }
+    return true;
+}
+
+template <typename Ty,
+		  bool Weighted,
+		  bool Directed>
+bool AdjacentList<Ty,Weighted,Directed>::GetEdgeOut(index_t start, std::vector<EdgeType> &res, bool append) const noexcept
+{
+    if (!list_.count(start))
         return false;
 
     if (!append)
         res.clear();
 
-    std::map<index_t, Node>::const_iterator iter = list_.find(source);
+    std::map<index_t, Node>::const_iterator iter = list_.find(start);
     auto  current = iter->second.second;
     while (current)
     {
         WEIGHTED_GRAPH
-        res.emplace_back(source, current->destination_, current->weight_);
+        res.emplace_back(start, current->destination_, current->weight_);
         ELSE
-            res.emplace_back(source, current->destination_);
+            res.emplace_back(start, current->destination_);
+
+        current = current->next_;
+    }
+
+    return true;
+}
+
+template <typename Ty,
+		  bool Weighted,
+		  bool Directed>
+template <typename Queue>
+bool AdjacentList<Ty,Weighted,Directed>::GetEdgeOutOrdered(index_t start, Queue&& queue, bool append) const noexcept
+{
+    static_assert(Weighted,"The edges are non-weighted.");
+
+    if (!list_.count(start))
+        return false;
+
+    if (!append)
+        queue = { };
+
+    std::map<index_t, Node>::const_iterator iter = list_.find(start);
+    auto current = iter->second.second;
+    while (current)
+    {
+        WEIGHTED_GRAPH
+            queue.emplace(start, current->destination_, current->weight_);
+        ELSE
+            queue.emplace(start, current->destination_);
 
         current = current->next_;
     }
@@ -437,6 +494,18 @@ void AdjacentList<Ty,Weighted,Directed>::Print() const noexcept
 template <typename Ty,
 		  bool Weighted,
 		  bool Directed>
+template <bool Ascending>
+decltype(auto) AdjacentList<Ty,Weighted,Directed>::makeEdgeQueue() const noexcept
+{
+    if constexpr (Ascending)
+        return std::priority_queue<EdgeType,std::vector<EdgeType>,std::greater<>>();
+    else
+        return std::priority_queue<EdgeType,std::vector<EdgeType>,std::less<>>();
+}
+
+template <typename Ty,
+		  bool Weighted,
+		  bool Directed>
 decltype(auto) AdjacentList<Ty,Weighted,Directed>::begin() const noexcept
 {
     return list_.begin();
@@ -470,6 +539,5 @@ auto AdjacentList<Ty,Weighted,Directed>::FetchEdge(index_t start, index_t dest) 
 
     return nullptr;
 }
-
 }  // namespace smart_graph_impl
 }  // namespace smart_graph

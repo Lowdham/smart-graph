@@ -381,6 +381,34 @@ template <typename Ty,
 		  bool Weighted,
 		  bool Directed,
 		  size_t Size>
+template <typename Queue>
+bool AdjacentMatrix<Ty,Weighted,Directed,Size>::GetEdgeInOrdered(index_t destination, Queue&& queue, bool append) const noexcept
+{
+    static_assert(Weighted,"The edges are non-weighted.");
+
+    if (!IndexCheck(destination))
+        return false;
+
+    if (!append)
+        queue = { };
+
+    for (index_t start = 0; start < Size; ++start)
+    {
+        WEIGHTED_GRAPH_BEGIN
+            if (WEIGHT_CHECK(matrix_[start][destination]))
+                queue.emplace(start, destination, matrix_[start][destination]);
+        WEIGHTED_GRAPH_END
+        ELSE 
+            if (matrix_[start][destination])
+                queue.emplace(start, destination);
+    }
+    return true;
+}
+
+template <typename Ty,
+		  bool Weighted,
+		  bool Directed,
+		  size_t Size>
 bool AdjacentMatrix<Ty,Weighted,Directed,Size>::GetEdgeOut(index_t start, std::vector<EdgeType> &res, bool append) const noexcept
 {
     if (!IndexCheck(start))
@@ -398,6 +426,34 @@ bool AdjacentMatrix<Ty,Weighted,Directed,Size>::GetEdgeOut(index_t start, std::v
         ELSE 
             if (matrix_[start][dest])
                 res.emplace_back(start, dest);
+    }
+    return true;
+}
+
+template <typename Ty,
+		  bool Weighted,
+		  bool Directed,
+		  size_t Size>
+template <typename Queue>
+bool AdjacentMatrix<Ty,Weighted,Directed,Size>::GetEdgeOutOrdered(index_t start, Queue&& queue, bool append) const noexcept
+{
+    static_assert(Weighted,"The edges are non-weighted.");
+
+    if (!IndexCheck(start))
+        return false;
+
+    if (!append)
+        queue = { };
+
+    for (index_t dest = 0; dest < Size; ++dest)
+    {
+        WEIGHTED_GRAPH_BEGIN
+            if (WEIGHT_CHECK(matrix_[start][dest]))
+                queue.emplace(start, dest, matrix_[start][dest]);
+        WEIGHTED_GRAPH_END
+        ELSE 
+            if (matrix_[start][dest])
+                queue.emplace(start, dest);
     }
     return true;
 }
@@ -428,14 +484,21 @@ void AdjacentMatrix<Ty,Weighted,Directed,Size>::Print() const noexcept
         std::cout << "[" << iter.first << "]";
         for (index_t dest = 0; dest < Size; ++dest)
         {
-            if (matrix_[start][dest])
-            {
-                has_path = true;
-                WEIGHTED_GRAPH
+            WEIGHTED_GRAPH_BEGIN
+                if (WEIGHT_CHECK(matrix_[start][dest]))
+                {
+                    has_path = true;
                     std::cout << "->[" << dest << "," << matrix_[start][dest] << "]";
-                ELSE
-                    std::cout << "->[" << dest << "]";
-            }
+                }
+            WEIGHTED_GRAPH_END
+
+            NON_WEIGHTED_GRAPH_BEGIN
+                if (matrix_[start][dest])
+                {
+                    has_path = true;
+                        std::cout << "->[" << dest << "]";
+                }
+            NON_WEIGHTED_GRAPH_END
         }
         if (!has_path)
             std::cout << "->[none,none]";
@@ -443,6 +506,19 @@ void AdjacentMatrix<Ty,Weighted,Directed,Size>::Print() const noexcept
         std::cout << '\n';
     }
     std::cout << std::endl;
+}
+
+template <typename Ty,
+		  bool Weighted,
+		  bool Directed,
+		  size_t Size>
+template <bool Ascending>
+decltype(auto) AdjacentMatrix<Ty,Weighted,Directed,Size>::makeEdgeQueue() const noexcept
+{
+    if constexpr (Ascending)
+        return std::priority_queue<EdgeType,std::vector<EdgeType>,std::greater<>>();
+    else
+        return std::priority_queue<EdgeType,std::vector<EdgeType>,std::less<>>();
 }
 
 template <typename Ty,
