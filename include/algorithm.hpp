@@ -14,22 +14,23 @@ template <typename Ty,
 		  bool Directed = false,
 		  bool Matrix = true,
 		  size_t Size = 0>
-class GraphAlgorithm : public std::tuple_element_t<Matrix, std::tuple<AdjacentList<Ty, Weighted, Directed>,
-																	  AdjacentMatrix<Ty, Weighted, Directed, Size>
-                                                                      >>
+class GraphAlgorithm : public std::tuple_element_t<Matrix, std::tuple<
+                                  AdjacentList<Ty, Weighted, Directed>,
+                                  AdjacentMatrix<Ty, Weighted, Directed, Size>
+>>
 {
-	using Base = std::tuple_element_t<Matrix, std::tuple<AdjacentList<Ty, Weighted, Directed>,
+  using Base = std::tuple_element_t<Matrix, std::tuple<AdjacentList<Ty, Weighted, Directed>,
                                                          AdjacentMatrix<Ty, Weighted, Directed, Size>
                                                          >>;
 
 protected:
-	//using iterator = typename Base::iterator;
+  //using iterator = typename Base::iterator;
 public:
-	GraphAlgorithm():Base() { }
+  GraphAlgorithm():Base() { }
 
-	GraphAlgorithm(const GraphAlgorithm& rhs):Base(rhs) { }
+  GraphAlgorithm(const GraphAlgorithm& rhs):Base(rhs) { }
 
-	GraphAlgorithm(GraphAlgorithm&& rhs):Base(std::forward<GraphAlgorithm>(rhs)) { }
+  GraphAlgorithm(GraphAlgorithm&& rhs):Base(std::forward<GraphAlgorithm>(rhs)) { }
 
 	
 };

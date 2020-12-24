@@ -14,27 +14,27 @@ extern struct AdjacentMatrixTag;
 /* Iterator Exception */
 class IteratorException : public std::exception
 {
-	std::string info;
+  std::string info_;
 
 public:
-	IteratorException(const std::string &str) : info(str) {}
+  IteratorException(const std::string &str): info_(str) {}
 
-	std::string what()
-	{
-		return info;
-	}
+  std::string what()
+  {
+    return info_;
+  }
 };
 
 class InvaildIterator : public IteratorException
 {
 public:
-	InvaildIterator(const std::string &str) : IteratorException(str) {}
+  InvaildIterator(const std::string &str) : IteratorException(str) {}
 };
 
 class InvaildOperation : public IteratorException
 {
 public:
-	InvaildOperation(const std::string &str) : IteratorException(str) {}
+  InvaildOperation(const std::string &str) : IteratorException(str) {}
 };
 
 /* Iterator */
@@ -42,42 +42,47 @@ template <typename Container, bool NeedChecked>
 class UncheckedIterator
 {
 public:
-	using EdgeType = typename Container::EdgeType;
+  using EdgeType = typename Container::EdgeType;
 
 private:
-	using ContainerTag = typename Container::ContainerType;
+  using ContainerTag = typename Container::ContainerType;
 
-	friend class UncheckedIterator<Container, true>;
-	friend class UncheckedIterator<Container, false>;
+  friend class UncheckedIterator<Container, true>;
+  friend class UncheckedIterator<Container, false>;
 
-	index_t pos_;
-	Container* source_;
+  index_t pos_;
+  Container* source_;
 
 public:
-	explicit UncheckedIterator(index_t p, Container &s);
+  explicit UncheckedIterator(index_t p, Container &s);
 
-	explicit UncheckedIterator(index_t p, Container *s) : UncheckedIterator(p, *s) {}
+  explicit UncheckedIterator(index_t p, Container *s) : UncheckedIterator(p, *s) {}
 
-	template <bool checked>
-	UncheckedIterator(const UncheckedIterator<Container, checked>& rhs);
+  template <bool checked>
+  UncheckedIterator(const UncheckedIterator<Container, checked>& rhs);
 
-	~UncheckedIterator() = default;
+  ~UncheckedIterator() = default;
 
-	index_t position() const noexcept;
+  index_t position() const noexcept;
 
-	decltype(auto) operator*();
+  decltype(auto) operator*();
 
-	decltype(auto) operator+=(const EdgeType& edge);
+  decltype(auto) operator+=(const EdgeType& edge);
 
-	decltype(auto) operator-=(const EdgeType& edge);
+  decltype(auto) operator-=(const EdgeType& edge);
 
-	bool advance(const EdgeType& edge);
+  bool advance(const EdgeType& edge);
 
-	bool back(const EdgeType& edge);
+  bool back(const EdgeType& edge);
 };
 
 template <typename Container>
-using Checked_Iterator = UncheckedIterator<Container, true>;
+using CheckedIterator = UncheckedIterator<Container, true>;
+
+template <typename Graph>
+decltype(auto) MakeIterator(Graph&& graph,index_t pos) {
+  return CheckedIterator(pos,graph);
+}	
 
 
 }  // namespace smart_graph_impl
