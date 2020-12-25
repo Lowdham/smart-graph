@@ -20,8 +20,8 @@ class GraphAlgorithm : public std::tuple_element_t<Matrix, std::tuple<
 >>
 {
   using Base = std::tuple_element_t<Matrix, std::tuple<AdjacentList<Ty, Weighted, Directed>,
-                                                         AdjacentMatrix<Ty, Weighted, Directed, Size>
-                                                         >>;
+                                                       AdjacentMatrix<Ty, Weighted, Directed, Size>
+                                                       >>;
 
 protected:
   //using iterator = typename Base::iterator;
@@ -32,7 +32,7 @@ public:
 
   GraphAlgorithm(GraphAlgorithm&& rhs):Base(std::forward<GraphAlgorithm>(rhs)) { }
 
-	
+    
 };
 
 }  // namespace smart_graph_impl

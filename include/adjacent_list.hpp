@@ -44,6 +44,27 @@ struct LinkNode<false>
   LinkNode(index_t i, LinkNode *n = nullptr) : destination_(i), next_(n) {}
 };
 
+template<bool Weighted>
+class InternalList
+{
+  /*  InternalList is a helper by which user can use operator[] to find the element in adjacent list
+   *  
+   *
+   */
+  using NodeType = LinkNode<Weighted>;
+  using NodePtr = NodeType*;
+
+  NodePtr head_;
+public:
+  InternalList(NodePtr head_ptr = nullptr);
+
+  InternalList(const InternalList& rhs);
+
+  weight_t operator[](index_t dest) const noexcept;
+
+  bool IsVaild() const noexcept;
+};
+
 template <typename Ty,
           bool Weighted = false,
           bool Directed = false>
@@ -75,6 +96,8 @@ public:
   AdjacentList(AdjacentList&& rhs);
 
   std::optional<Ty> At(index_t id) const;
+
+  InternalList<Weighted> operator[](index_t pos) const noexcept;
 
   template <typename Arg>
   bool Emplace(size_t s, Arg&& value) noexcept;
@@ -112,10 +135,14 @@ public:
 
   bool GetEdgeIn(index_t destination, std::vector<EdgeType> &res, bool append = false) const noexcept;
 
+  Edge<true> GetEdgeIn(index_t destination, EdgeWeight type) const noexcept;
+
   template<typename Queue>
   bool GetEdgeInOrdered(index_t destination, Queue&& queue, bool append = false) const noexcept;
 
   bool GetEdgeOut(index_t start, std::vector<EdgeType> &res, bool append = false) const noexcept;
+
+  Edge<true> GetEdgeOut(index_t start, EdgeWeight type) const noexcept;
 
   template<typename Queue>
   bool GetEdgeOutOrdered(index_t start, Queue&& queue, bool append = false) const noexcept;

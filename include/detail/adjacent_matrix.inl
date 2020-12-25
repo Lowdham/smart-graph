@@ -4,33 +4,33 @@ namespace smart_graph {
 namespace smart_graph_impl {
 
 template <typename Ty,
-		  bool Weighted,
-		  bool Directed,
-		  size_t Size>
+          bool Weighted,
+          bool Directed,
+          size_t Size>
 AdjacentMatrix<Ty,Weighted,Directed,Size>::AdjacentMatrix() : vertices_(), matrix_()
 {
-    WEIGHTED_GRAPH
-        for (size_t i = 0; i < Size; ++i)
-            for (size_t j = 0; j < Size; ++j)
-                matrix_[i][j] = kDisconnected;
-    ELSE 
-        for (size_t i = 0; i < Size; ++i)
-            matrix_[i].reset();
+  WEIGHTED_GRAPH
+    for (size_t i = 0; i < Size; ++i)
+      for (size_t j = 0; j < Size; ++j)
+        matrix_[i][j] = kDisconnected;
+  ELSE 
+    for (size_t i = 0; i < Size; ++i)
+      matrix_[i].reset();
 }
 
 template <typename Ty,
-		  bool Weighted,
-		  bool Directed,
-		  size_t Size>
+          bool Weighted,
+          bool Directed,
+          size_t Size>
 AdjacentMatrix<Ty,Weighted,Directed,Size>::~AdjacentMatrix()
 {
 
 }
 
 template <typename Ty,
-		  bool Weighted,
-		  bool Directed,
-		  size_t Size>
+          bool Weighted,
+          bool Directed,
+          size_t Size>
 AdjacentMatrix<Ty,Weighted,Directed,Size>::AdjacentMatrix(const AdjacentMatrix& rhs)
 {
     vertices_ = rhs.vertices_;
@@ -38,9 +38,9 @@ AdjacentMatrix<Ty,Weighted,Directed,Size>::AdjacentMatrix(const AdjacentMatrix& 
 }
 
 template <typename Ty,
-		  bool Weighted,
-		  bool Directed,
-		  size_t Size>
+          bool Weighted,
+          bool Directed,
+          size_t Size>
 AdjacentMatrix<Ty,Weighted,Directed,Size>::AdjacentMatrix(AdjacentMatrix&& rhs):
     matrix_(std::move(rhs.matrix_)),vertices_(std::move(rhs.vertices_))
 {
@@ -48,35 +48,47 @@ AdjacentMatrix<Ty,Weighted,Directed,Size>::AdjacentMatrix(AdjacentMatrix&& rhs):
 }
 
 template <typename Ty,
-		  bool Weighted,
-		  bool Directed,
-		  size_t Size>
-std::optional<Ty> AdjacentMatrix<Ty,Weighted,Directed,Size>::At(index_t s) const
-	{
-		if (!IndexCheck(s))
-			return std::nullopt;
+          bool Weighted,
+          bool Directed,
+          size_t Size>
+typename AdjacentMatrix<Ty,Weighted,Directed,Size>::BaseLine& 
+AdjacentMatrix<Ty,Weighted,Directed,Size>::operator[](int pos)
+{
+  if(pos < Size)
+    return matrix_[pos];
+}
 
-		return vertices_.find(s)->second;
-	}
 
 template <typename Ty,
-		  bool Weighted,
-		  bool Directed,
-		  size_t Size>
-template <typename Arg>
-bool AdjacentMatrix<Ty,Weighted,Directed,Size>::Emplace(size_t id, Arg &&value) noexcept
+          bool Weighted,
+          bool Directed,
+          size_t Size>
+std::optional<Ty> AdjacentMatrix<Ty,Weighted,Directed,Size>::At(index_t s) const
 {
-    if (!IndexCheck(id))
-        return false;
+  if (!IndexCheck(s))
+    return std::nullopt;
 
-    vertices_[id] = value;
-    return true;
+    return vertices_.find(s)->second;
 }
 
 template <typename Ty,
-		  bool Weighted,
-		  bool Directed,
-		  size_t Size>
+          bool Weighted,
+          bool Directed,
+          size_t Size>
+template <typename Arg>
+bool AdjacentMatrix<Ty,Weighted,Directed,Size>::Emplace(size_t id, Arg &&value) noexcept
+{
+  if (!IndexCheck(id))
+    return false;
+
+  vertices_[id] = value;
+  return true;
+}
+
+template <typename Ty,
+          bool Weighted,
+          bool Directed,
+          size_t Size>
 template <typename... _Arg>
 bool AdjacentMatrix<Ty,Weighted,Directed,Size>::RegisterVertex(index_t s, _Arg &&... args) noexcept
 {

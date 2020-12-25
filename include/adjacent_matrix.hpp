@@ -31,9 +31,14 @@ public:
   using EdgeType = Edge<Weighted>;
 
 protected:
-  using NonWeightedAdjacentMatrix = std::array<std::bitset<Size>, Size>;
-  using WeightedAdjacentMatrix = std::array<std::array<weight_t, Size>, Size>;
-  using AdjacentMatrixType = std::tuple_element_t<Weighted,std::tuple<NonWeightedAdjacentMatrix, WeightedAdjacentMatrix>>;
+  using BaseLine = std::tuple_element_t<Weighted,std::tuple<std::bitset<Size>,
+                                                            std::array<weight_t, Size>
+                                                           >>;
+  using AdjacentMatrixType = std::array<BaseLine, Size>;
+
+  //using NonWeightedAdjacentMatrix = std::array<std::bitset<Size>, Size>;
+  //using WeightedAdjacentMatrix = std::array<std::array<weight_t, Size>, Size>;
+  //using AdjacentMatrixType = std::tuple_element_t<Weighted,std::tuple<NonWeightedAdjacentMatrix, WeightedAdjacentMatrix>>;
 
   //using iterator = _Unchecked_Iterator<self, true>;
   friend class iterator;
@@ -51,6 +56,8 @@ public:
   AdjacentMatrix(AdjacentMatrix&& rhs);
 
   std::optional<Ty> At(index_t s) const;
+
+  BaseLine& operator[](int pos);
 
   template <typename Arg>
   bool Emplace(size_t id, Arg &&value) noexcept;

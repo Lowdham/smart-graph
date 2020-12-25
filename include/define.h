@@ -41,11 +41,14 @@ using size_t = uint16_t;  // 2 Bytes
 using index_t = uint16_t; // 2 Bytes
 using weight_t = int16_t; // 2 Bytes
 
-/*	When the weight is above the value of disconnected, the Edge is assumed as a connected edge
-	Therefore even if the weight of edge is 0, it will be concerned as a loop pointing to itself
-*/
+/*  When the weight is above the value of disconnected, the Edge is assumed as a connected edge
+ *  Therefore even if the weight of edge is 0, it will be concerned as a loop pointing to itself
+ */
 constexpr weight_t kDefaultWeight = 1;
+constexpr weight_t kWeightMax = INT16_MAX;
+constexpr weight_t kWeightMin = INT16_MIN;
 constexpr weight_t kDisconnected = -1;
+constexpr weight_t kConnected = 1;
 #define WEIGHT_CHECK(x) x > kDisconnected
 
 }  //namespace smart_graph_impl

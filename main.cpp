@@ -9,9 +9,9 @@ int main()
         list_graph.RegisterVertex(i,i);
 
     
-    list_graph.InsertEdge(0, 1);
-    list_graph.InsertEdge(0, 2);
-    list_graph.InsertEdge(0, 3);
+    list_graph.InsertEdge(0, 1, 10);
+    list_graph.InsertEdge(0, 2, 7);
+    list_graph.InsertEdge(0, 3, 9);
     list_graph.InsertEdge(1, 2);
     list_graph.InsertEdge(1, 3);
     list_graph.InsertEdge(2, 1,13);
@@ -37,8 +37,15 @@ int main()
     auto plainSubgraph = MakePlainSubgraph(list_graph, 1, 3, 0);
     plainSubgraph.Print();
 
-    std::cout << list_graph.DebugInfo() << matrix_graph.DebugInfo() << plainGraph.DebugInfo() << subGraph.DebugInfo() << std::endl;
+    std::cout << list_graph.DebugInfo() << matrix_graph.DebugInfo() << plainGraph.DebugInfo() << subGraph.DebugInfo() << plainSubgraph.DebugInfo() << std::endl;
     std::cout << "success\0" << std::endl;
+
+    std::cout << "0->1 weight:" << list_graph[0][1] << "\n";
+
+    auto maxe = list_graph.GetEdgeOut(0,EdgeWeight::MAX);
+    auto mine = list_graph.GetEdgeOut(0,EdgeWeight::MIN);
+    std::cout << "[0]out's max weight edge:" << maxe.weight_ << "\n";
+    std::cout << "[0]out's min weight edge:" << mine.weight_ << "\n";
 
     auto queue = list_graph.makeEdgeQueue<true>();
     list_graph.GetEdgeOutOrdered(2,queue);

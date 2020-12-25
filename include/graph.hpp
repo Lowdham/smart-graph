@@ -6,6 +6,7 @@
 namespace smart_graph {
 
 using smart_graph_impl::Edge;
+using smart_graph_impl::EdgeWeight;
 using smart_graph_impl::index_t;
 using smart_graph_impl::size_t;
 using smart_graph_impl::weight_t;
