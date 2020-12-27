@@ -409,14 +409,14 @@ bool AdjacentList<Ty,Weighted,Directed>::GetEdgeIn(index_t destination, std::vec
   if (!append)
     res.clear();
 
-  for (auto &iter : list_)
+  for (auto &[start,node] : list_)
   {
-    Link current = FetchEdge(iter.first, destination);  
+    Link current = FetchEdge(start, destination);  
     if (current) {
       WEIGHTED_GRAPH
-        res.emplace_back(iter.first, destination, current->weight_);
+        res.emplace_back(start, destination, current->weight_);
       ELSE
-        res.emplace_back(iter.first, destination);
+        res.emplace_back(start, destination);
     }
   }
   return true;
@@ -427,6 +427,43 @@ template <typename Ty,
           bool Directed>
 Edge<true> AdjacentList<Ty,Weighted,Directed>::GetEdgeIn(index_t destination,EdgeWeight type) const noexcept
 {
+  static_assert(Weighted,"Function can't work if the graph is not weighted.");
+
+  typename std::map<index_t,Node>::const_iterator iter = list_.find(destination);
+  if(iter == list_.end() || !iter->second.second)
+    return Edge<true>(-1,-1,kDisconnected);
+  
+  index_t current_start = -1;
+  weight_t current_weight = 0;
+  if(type == EdgeWeight::MIN)
+    current_weight = kWeightMax;
+  else if ( type == EdgeWeight::MAX)
+    current_weight = kWeightMin;
+
+  for(auto& [start,node] : list_)
+  {
+    Link current = FetchEdge(start,destination);
+    if(!current)
+      continue;
+
+    if(type == EdgeWeight::MIN)
+    {
+      if(current->weight_ < current_weight) {
+        current_start = start;
+        current_weight = current->weight_;
+      }
+    } else if (type == EdgeWeight::MAX) {
+        if(current->weight_ > current_weight) {
+        current_start = start;
+        current_weight = current->weight_;
+      }
+    }
+  }
+
+  if(current_start == -1)
+    return Edge<true>(-1,-1,kDisconnected);
+  else
+    return Edge<true>(current_start,destination,current_weight);
 }
 
 template <typename Ty,
@@ -475,8 +512,8 @@ bool AdjacentList<Ty,Weighted,Directed>::GetEdgeOut(index_t start, std::vector<E
       res.emplace_back(start, current->destination_, current->weight_);
     ELSE
       res.emplace_back(start, current->destination_);
-
-      current = current->next_;
+    
+    current = current->next_;
   }
 
   return true;
@@ -490,14 +527,10 @@ Edge<true> AdjacentList<Ty,Weighted,Directed>::GetEdgeOut(index_t start, EdgeWei
   static_assert(Weighted,"Function can't work if the graph is not weighted.");
 	
   typename std::map<index_t,Node>::const_iterator iter = list_.find(start);
-  if(iter == list_.end())
+  if(iter == list_.end() || !iter->second.second)
     return Edge<true>(-1,-1,kDisconnected);
 
   auto current = iter->second.second;
-  if(!current)
-    return Edge<true>(-1,-1,kDisconnected);
-
-
   weight_t current_weight = 0;
 
   if(type == EdgeWeight::MIN)
@@ -524,14 +557,17 @@ Edge<true> AdjacentList<Ty,Weighted,Directed>::GetEdgeOut(index_t start, EdgeWei
     {
       if(current->weight_ > current_weight) {
         current_destination = current->destination_;
-	current_weight = current->weight_;
+	      current_weight = current->weight_;
       }
 
       current = current->next_;
     }
   }
 
-  return Edge<true>(start,current_destination,current_weight);
+  if(current_destination == -1)
+    return Edge<true>(-1,-1,kDisconnected);
+  else
+    return Edge<true>(start,current_destination,current_weight);
 }
 
 template <typename Ty,
